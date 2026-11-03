@@ -23,7 +23,7 @@ resources:
             - master
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: ubuntu-24.04
 
 variables:
   # Segredos (admin-senha, oracle-connection, ...) lidos do Azure Key Vault
