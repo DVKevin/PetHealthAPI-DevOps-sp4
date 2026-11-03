@@ -15,8 +15,8 @@ pr: none
 
 resources:
   pipelines:
-    - pipeline: ci                # apelido usado nos caminhos abaixo
-      source: PetHealth-CI        # nome EXATO da pipeline de CI no Azure DevOps
+    - pipeline: ci # apelido usado nos caminhos abaixo
+      source: PetHealth-CI # nome EXATO da pipeline de CI no Azure DevOps
       trigger:
         branches:
           include:
@@ -65,13 +65,17 @@ stages:
                 - task: Bash@3
                   displayName: 3. Smoke test (API no ar + login no Oracle)
                   env:
-                    ADMIN_SENHA: $(admin-senha)   # segredo do Key Vault (aparece como *** no log)
+                    ADMIN_SENHA: $(admin-senha) # segredo do Key Vault (aparece como *** no log)
                   inputs:
                     targetType: inline
                     script: |
                       set -u
                       URL="https://$(webAppName).azurewebsites.net"
-                      echo "Aguardando a API responder em $URL/health/live ..."
+
+                      echo "Aguardando 30s o Web App reiniciar com a nova versão..."
+                      sleep 30
+
+                      echo "---- API no ar? ($URL/health/live) ----"
                       CODE=000
                       for i in $(seq 1 30); do
                         CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL/health/live" || true)
@@ -89,10 +93,15 @@ stages:
                       echo
 
                       echo "---- Login do administrador (valida a conexão com o Oracle) ----"
-                      LOGIN=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$URL/api/autenticacao/login" \
-                        -H "Content-Type: application/json" \
-                        -d "{\"email\":\"admin@pethealth.com\",\"senha\":\"$ADMIN_SENHA\"}")
-                      echo "Login: HTTP $LOGIN"
+                      LOGIN=000
+                      for i in $(seq 1 12); do
+                        LOGIN=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$URL/api/autenticacao/login" \
+                          -H "Content-Type: application/json" \
+                          -d "{\"email\":\"admin@pethealth.com\",\"senha\":\"$ADMIN_SENHA\"}" || true)
+                        echo "Tentativa $i: Login HTTP $LOGIN"
+                        [ "$LOGIN" = "200" ] && break
+                        sleep 10
+                      done
                       if [ "$LOGIN" != "200" ]; then
                         echo "##vso[task.logissue type=error]Login falhou (verifique Oracle e segredos no Key Vault)"
                         exit 1
