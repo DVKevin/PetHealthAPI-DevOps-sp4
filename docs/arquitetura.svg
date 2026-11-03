@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 760" width="1100" height="760" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="seta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <marker id="setaInv" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#7c3aed"/>
+    </marker>
+  </defs>
+  <rect width="1100" height="760" fill="#ffffff"/>
+  <text x="550" y="36" text-anchor="middle" font-size="24" font-weight="700" fill="#0f172a">Pet Health API — Arquitetura da Solução (Clean Architecture)</text>
+  <text x="550" y="60" text-anchor="middle" font-size="13" fill="#475569">As dependências de código apontam para dentro: API → Aplicação → Domínio; a Infraestrutura implementa as interfaces do Domínio e da Aplicação</text>
+
+  <!-- Clientes -->
+  <rect x="40" y="90" width="1020" height="60" rx="10" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="550" y="116" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">Clientes</text>
+  <text x="550" y="137" text-anchor="middle" font-size="13" fill="#334155">Swagger UI · VS Code REST Client (docs/pethealth.http) · App mobile Pet Health · Postman</text>
+
+  <!-- API -->
+  <rect x="40" y="180" width="1020" height="120" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="60" y="205" font-size="16" font-weight="700" fill="#1e3a8a">PetHealthAPI (Apresentação)</text>
+  <g font-size="12.5" fill="#1e293b">
+    <rect x="60" y="218" width="230" height="68" rx="6" fill="#ffffff" stroke="#93c5fd"/>
+    <text x="175" y="240" text-anchor="middle" font-weight="700">Controllers REST</text>
+    <text x="175" y="258" text-anchor="middle">Paginação · Filtros · Ordenação</text>
+    <text x="175" y="275" text-anchor="middle">HATEOAS (links por item e página)</text>
+    <rect x="305" y="218" width="230" height="68" rx="6" fill="#ffffff" stroke="#93c5fd"/>
+    <text x="420" y="240" text-anchor="middle" font-weight="700">Segurança</text>
+    <text x="420" y="258" text-anchor="middle">JWT Bearer · Perfis Admin/Usuario</text>
+    <text x="420" y="275" text-anchor="middle">Swagger com Authorize</text>
+    <rect x="550" y="218" width="230" height="68" rx="6" fill="#ffffff" stroke="#93c5fd"/>
+    <text x="665" y="240" text-anchor="middle" font-weight="700">Tratamento global de erros</text>
+    <text x="665" y="258" text-anchor="middle" font-size="11.5">IExceptionHandler → ProblemDetails</text>
+    <text x="665" y="275" text-anchor="middle">400 · 401 · 403 · 404 · 409 · 500</text>
+    <rect x="795" y="218" width="245" height="68" rx="6" fill="#ffffff" stroke="#93c5fd"/>
+    <text x="917" y="240" text-anchor="middle" font-weight="700">Pipeline e observabilidade</text>
+    <text x="917" y="258" text-anchor="middle">CorrelationId · Serilog · /health</text>
+    <text x="917" y="275" text-anchor="middle">OpenTelemetry (traces e métricas)</text>
+  </g>
+
+  <!-- Aplicação -->
+  <rect x="40" y="330" width="620" height="110" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="60" y="355" font-size="16" font-weight="700" fill="#14532d">PetHealthAPI.Aplicacao (Casos de uso)</text>
+  <g font-size="13" fill="#1e293b">
+    <text x="60" y="380">• Serviços: Tutor, Pet, Vacina, Consulta, Medicamento, RegistroDiario, Autenticacao</text>
+    <text x="60" y="400">• DTOs de entrada/saída e mapeamentos (a API nunca expõe entidades)</text>
+    <text x="60" y="420">• Exceções de aplicação · Interfaces ISenhaHasher e IGeradorToken</text>
+  </g>
+
+  <!-- Domínio -->
+  <rect x="40" y="470" width="620" height="110" rx="10" fill="#fef9c3" stroke="#ca8a04" stroke-width="2"/>
+  <text x="60" y="495" font-size="16" font-weight="700" fill="#713f12">PetHealthAPI.Dominio (Núcleo — sem dependências)</text>
+  <g font-size="13" fill="#1e293b">
+    <text x="60" y="520">• Entidades ricas: private set, Validar() estático, nameof()</text>
+    <text x="60" y="540">• Interfaces de repositório (IRepositorio&lt;T&gt; + específicas por agregado)</text>
+    <text x="60" y="560">• Filtros, paginação (ResultadoPaginado) e perfis de acesso</text>
+  </g>
+
+  <!-- Infraestrutura -->
+  <rect x="700" y="330" width="360" height="250" rx="10" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="720" y="355" font-size="16" font-weight="700" fill="#4c1d95">PetHealthAPI.Infraestrutura</text>
+  <g font-size="13" fill="#1e293b">
+    <text x="720" y="382">• AppDbContext + mapeamentos (EF Core)</text>
+    <text x="720" y="403">• Migrations (Sprint4Inicial)</text>
+    <text x="720" y="424">• Repositórios EF Core (padrão Repository)</text>
+    <text x="720" y="445">• Repositório MongoDB + agregação</text>
+    <text x="720" y="466">• Health checks: Oracle, MongoDB, memória</text>
+    <text x="720" y="487">• JWT (GeradorTokenJwt) e SenhaHasher</text>
+    <text x="720" y="508">• Admin padrão na inicialização</text>
+    <text x="720" y="529">• AplicacaoMetricas (Meter + ActivitySource)</text>
+    <text x="720" y="555" font-style="italic" fill="#6d28d9">Implementa as interfaces (DIP)</text>
+  </g>
+
+  <!-- Bancos -->
+  <rect x="700" y="615" width="172" height="115" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="786" y="643" text-anchor="middle" font-size="15" font-weight="700" fill="#7f1d1d">Oracle (FIAP)</text>
+  <text x="786" y="666" text-anchor="middle" font-size="12.5" fill="#1e293b">Tutores, Pets, Vacinas,</text>
+  <text x="786" y="684" text-anchor="middle" font-size="12.5" fill="#1e293b">Consultas, Medicamentos</text>
+  <text x="786" y="702" text-anchor="middle" font-size="12.5" fill="#1e293b">e Usuários (EF Core)</text>
+  <rect x="888" y="615" width="172" height="115" rx="10" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+  <text x="974" y="643" text-anchor="middle" font-size="15" font-weight="700" fill="#14532d">MongoDB</text>
+  <text x="974" y="666" text-anchor="middle" font-size="12.5" fill="#1e293b">(Docker)</text>
+  <text x="974" y="684" text-anchor="middle" font-size="12.5" fill="#1e293b">registros_diarios:</text>
+  <text x="974" y="702" text-anchor="middle" font-size="12.5" fill="#1e293b">diário de cuidados + XP</text>
+  <!-- Testes -->
+  <rect x="40" y="615" width="620" height="115" rx="10" fill="#f8fafc" stroke="#64748b" stroke-dasharray="6 4"/>
+  <text x="60" y="645" font-size="15" font-weight="700" fill="#0f172a">Testes (xUnit · padrão AAA)</text>
+  <text x="60" y="672" font-size="13" fill="#1e293b">• Unitários: Domínio e Aplicação com Moq e FluentAssertions</text>
+  <text x="60" y="694" font-size="13" fill="#1e293b">• Integração: WebApplicationFactory + EF InMemory + MongoDB em memória</text>
+
+  <!-- Setas -->
+  <line x1="550" y1="150" x2="550" y2="178" stroke="#475569" stroke-width="2" marker-end="url(#seta)"/>
+  <line x1="350" y1="300" x2="350" y2="328" stroke="#475569" stroke-width="2" marker-end="url(#seta)"/>
+  <line x1="350" y1="440" x2="350" y2="468" stroke="#475569" stroke-width="2" marker-end="url(#seta)"/>
+  <line x1="880" y1="300" x2="880" y2="328" stroke="#475569" stroke-width="2" marker-end="url(#seta)"/>
+  <line x1="698" y1="400" x2="662" y2="400" stroke="#7c3aed" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#setaInv)"/>
+  <line x1="698" y1="520" x2="662" y2="520" stroke="#7c3aed" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#setaInv)"/>
+  <line x1="786" y1="580" x2="786" y2="613" stroke="#475569" stroke-width="2" marker-end="url(#seta)"/>
+  <line x1="974" y1="580" x2="974" y2="613" stroke="#475569" stroke-width="2" marker-end="url(#seta)"/>
+
+  <!-- Legenda -->
+  <line x1="60" y1="745" x2="100" y2="745" stroke="#475569" stroke-width="2" marker-end="url(#seta)"/>
+  <text x="108" y="749" font-size="12" fill="#334155">depende de / chama</text>
+  <line x1="260" y1="745" x2="300" y2="745" stroke="#7c3aed" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#setaInv)"/>
+  <text x="308" y="749" font-size="12" fill="#334155">implementa interfaces de (inversão de dependência)</text>
+</svg>

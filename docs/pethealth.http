@@ -1,0 +1,252 @@
+# =============================================================================
+# Pet Health API — roteiro de testes no VS Code
+# Requer a extensão "REST Client" (humao.rest-client).
+# Clique em "Send Request" acima de cada requisição, NA ORDEM (os IDs e o token
+# são capturados automaticamente das respostas anteriores).
+# =============================================================================
+
+@baseUrl = http://localhost:5000
+
+### 1. Health check completo (público) — esperado: 200, Healthy (oracle, mongodb, memoria)
+GET {{baseUrl}}/health
+
+### 2. Liveness (público) — esperado: 200
+GET {{baseUrl}}/health/live
+
+### 3. Sem token — esperado: 401 com ProblemDetails "Não autenticado"
+GET {{baseUrl}}/api/pets
+
+### 4. Login como Admin — esperado: 200 com token e perfil "Admin"
+# @name loginAdmin
+POST {{baseUrl}}/api/autenticacao/login
+Content-Type: application/json
+
+{
+  "email": "admin@pethealth.com",
+  "senha": "Admin@123"
+}
+
+###
+@tokenAdmin = {{loginAdmin.response.body.$.token}}
+
+### 5. Quem sou eu — esperado: 200 com perfil "Admin"
+GET {{baseUrl}}/api/autenticacao/eu
+Authorization: Bearer {{tokenAdmin}}
+
+### 6. Login com senha errada — esperado: 401 "Email ou senha inválidos."
+POST {{baseUrl}}/api/autenticacao/login
+Content-Type: application/json
+
+{
+  "email": "admin@pethealth.com",
+  "senha": "senha-errada"
+}
+
+### 7. Cadastrar tutor — esperado: 201 com "dados" e "links" (HATEOAS)
+# @name tutor
+POST {{baseUrl}}/api/tutores
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "nome": "Maria Oliveira",
+  "email": "maria{{$randomInt 1000 999999}}@teste.com",
+  "telefone": "11999998888",
+  "endereco": "Rua das Flores, 100"
+}
+
+###
+@tutorId = {{tutor.response.body.$.dados.id}}
+
+### 8. Cadastrar tutor com email inválido — esperado: 400 "O email do tutor é inválido."
+POST {{baseUrl}}/api/tutores
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "nome": "Email Errado",
+  "email": "nao-e-um-email",
+  "telefone": "11999998888"
+}
+
+### 9. Cadastrar pet — esperado: 201 com links para tutor, vacinas, consultas, medicamentos e pontos
+# @name pet
+POST {{baseUrl}}/api/pets
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "nome": "Thor",
+  "especie": "Cão",
+  "raca": "Labrador",
+  "idade": 3,
+  "peso": 28.5,
+  "sexo": "Macho",
+  "castrado": true,
+  "alergias": "Frango",
+  "dataNascimento": "2023-04-10T00:00:00",
+  "tutorId": {{tutorId}}
+}
+
+###
+@petId = {{pet.response.body.$.dados.id}}
+
+### 10. Segundo e terceiro pets (para testar paginação)
+POST {{baseUrl}}/api/pets
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{ "nome": "Luna", "especie": "Gato", "idade": 2, "peso": 4.2, "castrado": false, "tutorId": {{tutorId}} }
+
+###
+POST {{baseUrl}}/api/pets
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{ "nome": "Bidu", "especie": "Cão", "idade": 8, "peso": 12, "castrado": true, "tutorId": {{tutorId}} }
+
+### 11. Pet com peso zero — esperado: 400 "O peso do pet deve ser maior que zero."
+POST {{baseUrl}}/api/pets
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{ "nome": "Invalido", "especie": "Cão", "peso": 0, "castrado": false, "tutorId": {{tutorId}} }
+
+### 12. Paginação + ordenação + filtro — esperado: 200, 2 itens, links "proxima" e "ultima"
+GET {{baseUrl}}/api/pets?tutorId={{tutorId}}&pagina=1&tamanhoPagina=2&ordenarPor=nome&direcao=asc
+Authorization: Bearer {{tokenAdmin}}
+
+### 13. Filtro por espécie, ordem decrescente de idade
+GET {{baseUrl}}/api/pets?especie=Cão&ordenarPor=idade&direcao=desc
+Authorization: Bearer {{tokenAdmin}}
+
+### 14. Pets do tutor (rota aninhada)
+GET {{baseUrl}}/api/tutores/{{tutorId}}/pets
+Authorization: Bearer {{tokenAdmin}}
+
+### 15. Registrar vacina — esperado: 201
+POST {{baseUrl}}/api/vacinas
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "nome": "V10",
+  "dataAplicacao": "2026-09-01T00:00:00",
+  "dataProximaDose": "2026-10-15T00:00:00",
+  "fabricante": "Zoetis",
+  "lote": "L2026",
+  "veterinario": "Dra. Paula",
+  "petId": {{petId}}
+}
+
+### 16. Vacinas vencendo nos próximos 60 dias
+GET {{baseUrl}}/api/vacinas?vencendoEmDias=60
+Authorization: Bearer {{tokenAdmin}}
+
+### 17. Registrar consulta — esperado: 201
+POST {{baseUrl}}/api/consultas
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "dataConsulta": "2026-09-20T10:00:00",
+  "motivo": "Check-up anual",
+  "veterinario": "Dr. João",
+  "clinica": "Clínica Vida Animal",
+  "diagnostico": "Saudável",
+  "custo": 180.00,
+  "petId": {{petId}}
+}
+
+### 18. Registrar medicamento — esperado: 201 com link "encerrar" (ativo)
+# @name medicamento
+POST {{baseUrl}}/api/medicamentos
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "nome": "Amoxicilina",
+  "dosagem": "250mg",
+  "frequencia": "12 em 12 horas",
+  "dataInicio": "2026-09-25T00:00:00",
+  "petId": {{petId}}
+}
+
+###
+@medicamentoId = {{medicamento.response.body.$.dados.id}}
+
+### 19. Encerrar tratamento — esperado: 200, ativo=false e SEM o link "encerrar"
+PATCH {{baseUrl}}/api/medicamentos/{{medicamentoId}}/encerrar
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{ "dataFim": "2026-09-29T00:00:00" }
+
+### 20. Diário de cuidados no MongoDB — esperado: 201 com pontos = 30
+# @name registro
+POST {{baseUrl}}/api/registros-diarios
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{
+  "petId": {{petId}},
+  "data": "2026-09-29T00:00:00",
+  "alimentacao": true,
+  "hidratacao": true,
+  "passeio": true,
+  "medicacaoEmDia": false,
+  "humor": "Feliz",
+  "observacoes": "Passeou 40 minutos no parque"
+}
+
+### 21. Segundo registro — esperado: 201 com pontos = 40
+POST {{baseUrl}}/api/registros-diarios
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: application/json
+
+{ "petId": {{petId}}, "data": "2026-09-28T00:00:00", "alimentacao": true, "hidratacao": true, "passeio": true, "medicacaoEmDia": true }
+
+### 22. XP e nível do pet (agregação no MongoDB) — esperado: totalPontos = 70, nivel = 1
+GET {{baseUrl}}/api/registros-diarios/pets/{{petId}}/pontos
+Authorization: Bearer {{tokenAdmin}}
+
+### 23. Listar registros do pet ordenados por pontos
+GET {{baseUrl}}/api/registros-diarios?petId={{petId}}&ordenarPor=pontos&direcao=desc
+Authorization: Bearer {{tokenAdmin}}
+
+### 24. Recurso inexistente — esperado: 404 com ProblemDetails e correlationId
+GET {{baseUrl}}/api/pets/999999
+Authorization: Bearer {{tokenAdmin}}
+X-Correlation-ID: teste-roteiro-404
+
+### 25. Cadastrar usuário comum — esperado: 201 com perfil "Usuario"
+# @name cadastroUsuario
+POST {{baseUrl}}/api/autenticacao/registrar
+Content-Type: application/json
+
+{
+  "nome": "Usuário Comum",
+  "email": "usuario{{$randomInt 1000 999999}}@teste.com",
+  "senha": "Senha@123"
+}
+
+### 26. Login do usuário comum
+# @name loginUsuario
+POST {{baseUrl}}/api/autenticacao/login
+Content-Type: application/json
+
+{
+  "email": "{{cadastroUsuario.response.body.$.email}}",
+  "senha": "Senha@123"
+}
+
+###
+@tokenUsuario = {{loginUsuario.response.body.$.token}}
+
+### 27. Usuário comum tentando excluir — esperado: 403 "Acesso negado"
+DELETE {{baseUrl}}/api/pets/{{petId}}
+Authorization: Bearer {{tokenUsuario}}
+
+### 28. Admin excluindo — esperado: 204
+DELETE {{baseUrl}}/api/pets/{{petId}}
+Authorization: Bearer {{tokenAdmin}}

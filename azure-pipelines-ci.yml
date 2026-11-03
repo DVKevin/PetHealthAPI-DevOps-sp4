@@ -1,0 +1,88 @@
+# =============================================================================
+#  Pet Health API - Pipeline de CI (Integração Contínua)
+#  Sprint 4 - DevOps Tools & Cloud Computing (FIAP)
+#
+#  Dispara automaticamente a cada push na branch master do Azure Repos.
+#  Etapas: Restore -> Build -> Testes automáticos (xUnit) -> Publish -> Artefato
+#  O artefato "pethealth-api" publicado aqui dispara a Pipeline de CD.
+#
+#  IMPORTANTE: no Azure DevOps esta pipeline deve se chamar exatamente
+#  "PetHealth-CI" (a pipeline de CD usa esse nome para escutar o artefato).
+# =============================================================================
+
+trigger:
+  branches:
+    include:
+      - master
+
+pr: none
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  buildConfiguration: Release
+  solution: PetHealthAPI.sln
+  apiProject: src/PetHealthAPI/PetHealthAPI.csproj
+  artifactName: pethealth-api
+
+stages:
+  - stage: CI
+    displayName: CI - Build, Testes e Artefato
+    jobs:
+      - job: BuildAndTest
+        displayName: Build and Test
+        steps:
+          - task: UseDotNet@2
+            displayName: 1. Instalar .NET SDK 8
+            inputs:
+              packageType: sdk
+              version: 8.0.x
+
+          - task: DotNetCoreCLI@2
+            displayName: 2. Restore (dependências NuGet)
+            inputs:
+              command: restore
+              projects: $(solution)
+
+          - task: DotNetCoreCLI@2
+            displayName: 3. Build da solução
+            inputs:
+              command: build
+              projects: $(solution)
+              arguments: --configuration $(buildConfiguration) --no-restore
+
+          - task: DotNetCoreCLI@2
+            displayName: 4. Testes automáticos (unitários + integração)
+            inputs:
+              command: test
+              projects: tests/**/*.csproj
+              arguments: >-
+                --configuration $(buildConfiguration)
+                --no-build
+                --collect "XPlat Code Coverage"
+              publishTestResults: true
+              testRunTitle: PetHealth - Testes Unitários e de Integração
+
+          - task: PublishCodeCoverageResults@2
+            displayName: 5. Publicar cobertura de código
+            condition: succeededOrFailed()
+            inputs:
+              summaryFileLocation: $(Agent.TempDirectory)/**/coverage.cobertura.xml
+
+          - task: DotNetCoreCLI@2
+            displayName: 6. Publish da API (pacote .zip)
+            inputs:
+              command: publish
+              publishWebProjects: false
+              projects: $(apiProject)
+              arguments: --configuration $(buildConfiguration) --no-build --output $(Build.ArtifactStagingDirectory)/app
+              zipAfterPublish: true
+              modifyOutputPath: true
+
+          - task: PublishPipelineArtifact@1
+            displayName: 7. Publicar artefato no Azure DevOps
+            inputs:
+              targetPath: $(Build.ArtifactStagingDirectory)/app
+              artifact: $(artifactName)
+              publishLocation: pipeline

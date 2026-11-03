@@ -1,0 +1,14 @@
+# MongoDB usado pelo diário de cuidados (registros diários).
+# Subir:  docker compose up -d      Parar:  docker compose down
+services:
+  mongodb:
+    image: mongo:7
+    container_name: pethealth-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - pethealth-mongo-dados:/data/db
+    restart: unless-stopped
+
+volumes:
+  pethealth-mongo-dados:

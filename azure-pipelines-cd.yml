@@ -1,0 +1,100 @@
+# =============================================================================
+#  Pet Health API - Pipeline de CD (Entrega/Deploy Contínuo)
+#  Sprint 4 - DevOps Tools & Cloud Computing (FIAP)
+#
+#  NÃO dispara por commit: dispara sozinha quando a pipeline "PetHealth-CI"
+#  termina com sucesso na master e publica um NOVO ARTEFATO.
+#  Etapas: Baixar artefato -> Deploy no Azure Web App -> Smoke test
+#
+#  Segredos: vêm do Variable Group "pethealth-keyvault" (Library), que é
+#  vinculado ao Azure Key Vault. Nenhuma senha fica no repositório nem no YAML.
+# =============================================================================
+
+trigger: none
+pr: none
+
+resources:
+  pipelines:
+    - pipeline: ci                # apelido usado nos caminhos abaixo
+      source: PetHealth-CI        # nome EXATO da pipeline de CI no Azure DevOps
+      trigger:
+        branches:
+          include:
+            - master
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  # Segredos (admin-senha, oracle-connection, ...) lidos do Azure Key Vault
+  - group: pethealth-keyvault
+  # Dados NÃO sensíveis (nomes de recursos)
+  - name: azureSubscription
+    value: sc-azure-pethealth
+  - name: webAppName
+    value: pethealth-api-rm563454
+  - name: artifactName
+    value: pethealth-api
+
+stages:
+  - stage: CD
+    displayName: CD - Deploy no Azure Web App
+    jobs:
+      - deployment: DeployWebApp
+        displayName: Deploy Web App
+        environment: producao
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: ci
+                  displayName: 1. Baixar artefato gerado pelo CI
+                  artifact: $(artifactName)
+
+                - task: AzureWebApp@1
+                  displayName: 2. Deploy no Azure Web App (Linux .NET 8)
+                  inputs:
+                    azureSubscription: $(azureSubscription)
+                    appType: webAppLinux
+                    appName: $(webAppName)
+                    package: $(Pipeline.Workspace)/ci/$(artifactName)/**/*.zip
+                    runtimeStack: DOTNETCORE|8.0
+                    startUpCommand: dotnet PetHealthAPI.dll
+                    deploymentMethod: zipDeploy
+
+                - task: Bash@3
+                  displayName: 3. Smoke test (API no ar + login no Oracle)
+                  env:
+                    ADMIN_SENHA: $(admin-senha)   # segredo do Key Vault (aparece como *** no log)
+                  inputs:
+                    targetType: inline
+                    script: |
+                      set -u
+                      URL="https://$(webAppName).azurewebsites.net"
+                      echo "Aguardando a API responder em $URL/health/live ..."
+                      CODE=000
+                      for i in $(seq 1 30); do
+                        CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL/health/live" || true)
+                        echo "Tentativa $i: HTTP $CODE"
+                        [ "$CODE" = "200" ] && break
+                        sleep 10
+                      done
+                      if [ "$CODE" != "200" ]; then
+                        echo "##vso[task.logissue type=error]A API não respondeu em /health/live"
+                        exit 1
+                      fi
+
+                      echo "---- /health (Oracle, MongoDB, memória) ----"
+                      curl -s "$URL/health" || true
+                      echo
+
+                      echo "---- Login do administrador (valida a conexão com o Oracle) ----"
+                      LOGIN=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$URL/api/autenticacao/login" \
+                        -H "Content-Type: application/json" \
+                        -d "{\"email\":\"admin@pethealth.com\",\"senha\":\"$ADMIN_SENHA\"}")
+                      echo "Login: HTTP $LOGIN"
+                      if [ "$LOGIN" != "200" ]; then
+                        echo "##vso[task.logissue type=error]Login falhou (verifique Oracle e segredos no Key Vault)"
+                        exit 1
+                      fi
+                      echo "Deploy validado com sucesso: $URL"

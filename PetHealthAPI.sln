@@ -1,0 +1,64 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{E7927947-A42F-4C2F-A51F-BEC1AFE42AA8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetHealthAPI.Tests.Unit", "tests\PetHealthAPI.Tests.Unit\PetHealthAPI.Tests.Unit.csproj", "{9B5CC0F9-C469-4A5A-BC21-BCA776987B70}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetHealthAPI.Tests.Integration", "tests\PetHealthAPI.Tests.Integration\PetHealthAPI.Tests.Integration.csproj", "{63DBF69D-2B96-4B4C-89E2-4169CA0BBA95}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5FDA12DF-9703-4C60-A17D-AE73CC68A55D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetHealthAPI", "src\PetHealthAPI\PetHealthAPI.csproj", "{4849FCA8-7FA2-4AE2-B6DF-8B97B8A4A632}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetHealthAPI.Dominio", "src\PetHealthAPI.Dominio\PetHealthAPI.Dominio.csproj", "{1DFC7E36-568D-4467-9FB5-B972DDE6049F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetHealthAPI.Aplicacao", "src\PetHealthAPI.Aplicacao\PetHealthAPI.Aplicacao.csproj", "{316F8174-E7A6-498D-817B-67156AD4429F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetHealthAPI.Infraestrutura", "src\PetHealthAPI.Infraestrutura\PetHealthAPI.Infraestrutura.csproj", "{4F8A9565-4C2F-449E-B7D8-C1764B1EAC86}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9B5CC0F9-C469-4A5A-BC21-BCA776987B70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B5CC0F9-C469-4A5A-BC21-BCA776987B70}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B5CC0F9-C469-4A5A-BC21-BCA776987B70}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B5CC0F9-C469-4A5A-BC21-BCA776987B70}.Release|Any CPU.Build.0 = Release|Any CPU
+		{63DBF69D-2B96-4B4C-89E2-4169CA0BBA95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63DBF69D-2B96-4B4C-89E2-4169CA0BBA95}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63DBF69D-2B96-4B4C-89E2-4169CA0BBA95}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63DBF69D-2B96-4B4C-89E2-4169CA0BBA95}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4849FCA8-7FA2-4AE2-B6DF-8B97B8A4A632}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4849FCA8-7FA2-4AE2-B6DF-8B97B8A4A632}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4849FCA8-7FA2-4AE2-B6DF-8B97B8A4A632}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4849FCA8-7FA2-4AE2-B6DF-8B97B8A4A632}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DFC7E36-568D-4467-9FB5-B972DDE6049F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DFC7E36-568D-4467-9FB5-B972DDE6049F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DFC7E36-568D-4467-9FB5-B972DDE6049F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DFC7E36-568D-4467-9FB5-B972DDE6049F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{316F8174-E7A6-498D-817B-67156AD4429F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{316F8174-E7A6-498D-817B-67156AD4429F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{316F8174-E7A6-498D-817B-67156AD4429F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{316F8174-E7A6-498D-817B-67156AD4429F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F8A9565-4C2F-449E-B7D8-C1764B1EAC86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F8A9565-4C2F-449E-B7D8-C1764B1EAC86}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F8A9565-4C2F-449E-B7D8-C1764B1EAC86}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F8A9565-4C2F-449E-B7D8-C1764B1EAC86}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9B5CC0F9-C469-4A5A-BC21-BCA776987B70} = {E7927947-A42F-4C2F-A51F-BEC1AFE42AA8}
+		{63DBF69D-2B96-4B4C-89E2-4169CA0BBA95} = {E7927947-A42F-4C2F-A51F-BEC1AFE42AA8}
+		{4849FCA8-7FA2-4AE2-B6DF-8B97B8A4A632} = {5FDA12DF-9703-4C60-A17D-AE73CC68A55D}
+		{1DFC7E36-568D-4467-9FB5-B972DDE6049F} = {5FDA12DF-9703-4C60-A17D-AE73CC68A55D}
+		{316F8174-E7A6-498D-817B-67156AD4429F} = {5FDA12DF-9703-4C60-A17D-AE73CC68A55D}
+		{4F8A9565-4C2F-449E-B7D8-C1764B1EAC86} = {5FDA12DF-9703-4C60-A17D-AE73CC68A55D}
+	EndGlobalSection
+EndGlobal
