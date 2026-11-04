@@ -20,7 +20,7 @@ public static class SwaggerConfiguracao
         {
             opcoes.SwaggerDoc("v1", new OpenApiInfo
             {
-                Title = "Pet Health API",
+                Title = "Pet Health API - Sprint 4 DevOps (deploy automático)",
                 Version = "v1",
                 Description = "API RESTful da plataforma Pet Health (Challenge FIAP 2026 — CLYVO VET). " +
                               "Tutores, pets, vacinas, consultas e medicamentos no Oracle; diário de cuidados " +
