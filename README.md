@@ -76,33 +76,35 @@ No vídeo, o CRUD completo (inserir, consultar, atualizar e deletar) é feito em
 
 ## 4. Projeto no Azure DevOps
 
-| Campo             | Valor                                                                                     |
-| ----------------- | ----------------------------------------------------------------------------------------- |
-| Project Name      | `Sprint 4 – Azure DevOps`                                                                 |
-| Description       | Projeto para entrega da Sprint 4 do professor João Menk + integrantes (RM - nome - turma) |
-| Visibility        | Private                                                                                   |
-| Version control   | Git                                                                                       |
-| Work item process | Scrum                                                                                     |
-| Professor         | convidado com acesso **Basic**                                                            |
+| Campo               | Valor                                                                                                                                                                                                                                              |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Project Name        | `Sprint 4 – Azure DevOps`                                                                                                                                                                                                                          |
+| Description         | Projeto para entrega da Sprint 4 do professor João Menk · Integrantes: RM556649 - Matheus Arazin de Oliveira - 2TDSPV · RM565597 - Artur Pioli Silva - 2TDSPV · RM563454 - Kevin Martins Campos - 2TDSPV · RM566058 - Pedro Gabriel Claes - 2TDSPV |
+| Visibility          | Private                                                                                                                                                                                                                                            |
+| Version control     | Git                                                                                                                                                                                                                                                |
+| Work item process   | Scrum                                                                                                                                                                                                                                              |
+| Acesso ao professor | João Carlos Menk convidado para o projeto com acesso **Basic**                                                                                                                                                                                     |
 
 ## 5. Pipelines CI/CD
 
-**CI — `azure-pipelines-ci.yml` (pipeline `PetHealth-CI`)**
+Pipelines em **YAML**, versionadas no próprio repositório:
 
-| Regra                                | Como foi atendida                                                                                    |
-| ------------------------------------ | ---------------------------------------------------------------------------------------------------- |
-| Conectada ao repositório             | Pipeline YAML criada a partir do Azure Repos do projeto                                              |
-| Dispara a cada alteração na `master` | `trigger: branches: include: [ master ]`                                                             |
-| Execução de testes                   | `dotnet test` nos projetos `tests/**` (unitários + integração) com resultados e cobertura publicados |
-| Geração e publicação do artefato     | `dotnet publish` (zip) + `PublishPipelineArtifact` → artefato `pethealth-api`                        |
+| Pipeline                                          | Arquivo                  | Jobs / tasks                                                                                                                                                                                    |
+| ------------------------------------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **PetHealth-CI** (CI: build + testes automáticos) | `azure-pipelines-ci.yml` | Job _Build and Test_: 1. Instalar .NET SDK 8 → 2. Restore → 3. Build → 4. Testes automáticos (unitários + integração) → 5. Publicar cobertura → 6. Publish da API (.zip) → 7. Publicar artefato |
+| **PetHealth-CD** (CD: deploy automático)          | `azure-pipelines-cd.yml` | Deployment job _Deploy Web App_ (environment `producao`): 1. Baixar artefato do CI → 2. Deploy no Azure Web App → 3. Smoke test (health check + login)                                          |
 
-**CD — `azure-pipelines-cd.yml` (pipeline `PetHealth-CD`)**
+**Regras obrigatórias da pipeline**
 
-| Regra                      | Como foi atendida                                                                                              |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| Dispara após novo artefato | `resources.pipelines` com `trigger` na pipeline `PetHealth-CI` (branch `master`); `trigger: none` para commits |
-| Deploy em Azure Web App    | Task `AzureWebApp@1` (Linux, `DOTNETCORE\|8.0`, zip deploy) no environment `producao`                          |
-| Validação pós-deploy       | Smoke test em `/health/live`, `/health` e login do administrador                                               |
+| Regra                                                            | Como foi atendida                                                                                                                                                   |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| I. Configurada e conectada ao repositório da aplicação           | As duas pipelines foram criadas a partir do **Azure Repos** do projeto (`Sprint 4 – Azure DevOps`, branch `master`)                                                 |
+| II. CI dispara a cada alteração na branch master                 | `trigger: branches: include: [ master ]` em `azure-pipelines-ci.yml` (execução _Individual CI_)                                                                     |
+| III. CD dispara após novo artefato gerado                        | `resources.pipelines` com `trigger` na pipeline `PetHealth-CI`; `trigger: none` para commits (execução _Automatically triggered_)                                   |
+| IV. Variáveis de ambiente protegidas (usuários, senhas e tokens) | Segredos no **Azure Key Vault**, lidos pelo **Variable Group `pethealth-keyvault`** (mascarados nos logs) e pelo Web App via **Key Vault references** — ver seção 6 |
+| V. Geração e publicação do artefato no Azure DevOps              | `dotnet publish` (zip) + `PublishPipelineArtifact` → artefato **`pethealth-api`** (`PetHealthAPI.zip`)                                                              |
+| VI. Etapa de execução de testes no CI                            | `dotnet test` nos projetos `tests/**`: **126 testes** (110 unitários + 16 de integração), com resultados e cobertura publicados                                     |
+| VII. Deploy em Azure Web App ou ACI                              | Task `AzureWebApp@1` → **Azure Web App** Linux .NET 8 `pethealth-api-rm563454`                                                                                      |
 
 ## 6. Variáveis de ambiente protegidas (usuários, senhas e tokens)
 
